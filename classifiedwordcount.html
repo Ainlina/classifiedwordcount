@@ -1,0 +1,116 @@
+<html>
+    <head>
+        <title>Kate's Classifying Word Counter</title>
+        <style>
+            a .clickable {
+                color: blue;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <p>To use this, paste the minutes in the text box, then <a onclick="prepareminutes();" class="clickable">click here.</a></p>
+        <textarea id="inputminutes" rows="10" placeholder="Minutes go here"></textarea>
+        <p>Categories can be configured below.</p>
+        <button onclick="addClass()">New category</button>
+        <table id="classtable"></table>
+        <div id="minutestoclassify" class="test foo bar"></div>
+        <script>
+            var currentchosenclass = null;
+            var intext = document.getElementById("inputminutes");
+            var minutesdiv = document.getElementById("minutestoclassify");
+            var classtable = document.getElementById("classtable");
+            const classarray = [];
+            class SpeakerClass {
+                constructor(selectmethod){
+                    this.tablerow = document.createElement("tr");
+                    
+                    this.namebox = document.createElement("input");
+                    this.namebox.placeholder = "Name of category";
+                    var nameboxelem = document.createElement("td");
+                    nameboxelem.appendChild(this.namebox);
+                    this.tablerow.appendChild(nameboxelem);
+                    
+                    this.colorpicker = document.createElement("input");
+                    this.colorpicker.size = 7;
+                    this.colorpicker.placeholder = "Color";
+                    var colorpickerelem = document.createElement("td");
+                    colorpickerelem.append(this.colorpicker);
+                    this.tablerow.appendChild(colorpickerelem);
+                    
+                    this.selectbutton = document.createElement("button");
+                    this.selectbutton.innerText = "Select";
+                    const thisspeaker = this;
+                    this.selectbutton.onclick = function(){selectmethod(thisspeaker)};
+                    var selectbuttonelem = document.createElement("td");
+                    selectbuttonelem.appendChild(this.selectbutton)
+                    this.tablerow.appendChild(selectbuttonelem);
+                }
+
+                appearSelected(){
+                    this.selectbutton.innerText = "Selected";
+                }
+
+                appearUnselected(){
+                    this.selectbutton.innerText = "Select";
+                }
+
+                getName(){
+                    return this.namebox.value;
+                }
+
+                getColor(){
+                    return this.colorpicker.value;
+                }
+            }
+
+            function selectSpeakerClass(chosenclass) {
+                classarray.forEach(c => {c.appearUnselected()})
+                chosenclass.appearSelected();
+                currentchosenclass = this;
+            }
+
+            class MinutesLine {
+                constructor(text){
+                    this.text = text;
+                    this.para = document.createElement("p");
+                    this.para.appendChild(document.createTextNode(text));
+                    
+                    const thisminutesline = this;
+                    textpara.onclick = function(){handleParaClick(thisminutesline)};
+                    this.selectedclass = null;
+                }
+
+                decorateByClass(selectedclass){
+                    this.selectedclass = selectedclass;
+                    this.textpara.style.backgroundColor = selectedclass.getColor();
+                    this.textpara.label.innerText = selectedclass.getName();
+                }
+            }
+
+            function prepareminutes(){
+                const inlines = intext.value.split("\n");
+                inlines.forEach(para => {
+                    var p = document.createElement("p");
+                    const paranode = document.createTextNode(para);
+                    p.appendChild(paranode);
+                    p.onclick = function(){setcolor(p);};
+                    minutesdiv.appendChild(p);
+                })
+            }
+
+            function handleParaClick(MinutesLine){
+                const elem = MinutesLine.textpara;
+                elem.style.backgroundColor = highlightcolor;
+                elem.className = "selected";
+            }
+            
+            function addClass(){
+                var newclass = new SpeakerClass(selectSpeakerClass);
+                classarray.push(newclass);
+                classtable.appendChild(newclass.tablerow);
+            }
+        </script>
+    </body>
+</html>
