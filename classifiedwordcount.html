@@ -1,116 +1,190 @@
-<html>
-    <head>
-        <title>Kate's Classifying Word Counter</title>
-        <style>
-            a .clickable {
-                color: blue;
-                text-decoration: underline;
-                cursor: pointer;
-            }
-        </style>
-    </head>
-    <body>
-        <p>To use this, paste the minutes in the text box, then <a onclick="prepareminutes();" class="clickable">click here.</a></p>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kate's Classifying Word Counter</title>
+    <style>
+        html {
+            font-family: sans-serif;
+        }
+
+        body {
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 750px;
+            padding-left: 32px;
+            padding-right: 32px;
+        }
+
+        #inputminutes {
+            display: block;
+            width: 100%;
+            margin-top: 1em;
+            margin-bottom: 1em;
+            width: -moz-available;
+            width: -webkit-fill-available;
+        }
+
+        .section {
+            padding: 1em;
+            box-shadow: 0px 0px 10px rgb(0 0 0 / 15%);
+            margin: 20px;
+            max-width: 1000px;
+            width: 100%;
+            border: 1px solid lightgray;
+            border-radius: 5px;
+        }
+
+        p {
+            margin-block-start: 0.5em;
+            margin-block-end: 1em;
+        }
+
+        .explanation {
+            background: rgb(238, 237, 237);
+            padding: 0.5em;
+            border-radius: 5px;
+        }
+
+        #minutestoclassify {
+            padding: 0.5em;
+        }
+
+        #classtable {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            border-collapse: collapse;
+        }
+
+        #classtable td {
+            padding-right: 0.5em;
+            padding-bottom: 0.5em;
+        }
+
+        input,
+        button {
+            padding: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="section">
+        <p class="explanation">To use this, first paste the minutes in the text box then click "Process".</p>
         <textarea id="inputminutes" rows="10" placeholder="Minutes go here"></textarea>
-        <p>Categories can be configured below.</p>
+        <button onclick="prepareminutes();">Process</button>
+    </div>
+    <div class="section">
+        <p class="explanation">Categories can be configured below.</p>
         <button onclick="addClass()">New category</button>
         <table id="classtable"></table>
+    </div>
+    <div class="section">
+        <p class="explanation">Output will be displayed here.</p>
         <div id="minutestoclassify" class="test foo bar"></div>
-        <script>
-            var currentchosenclass = null;
-            var intext = document.getElementById("inputminutes");
-            var minutesdiv = document.getElementById("minutestoclassify");
-            var classtable = document.getElementById("classtable");
-            const classarray = [];
-            class SpeakerClass {
-                constructor(selectmethod){
-                    this.tablerow = document.createElement("tr");
-                    
-                    this.namebox = document.createElement("input");
-                    this.namebox.placeholder = "Name of category";
-                    var nameboxelem = document.createElement("td");
-                    nameboxelem.appendChild(this.namebox);
-                    this.tablerow.appendChild(nameboxelem);
-                    
-                    this.colorpicker = document.createElement("input");
-                    this.colorpicker.size = 7;
-                    this.colorpicker.placeholder = "Color";
-                    var colorpickerelem = document.createElement("td");
-                    colorpickerelem.append(this.colorpicker);
-                    this.tablerow.appendChild(colorpickerelem);
-                    
-                    this.selectbutton = document.createElement("button");
-                    this.selectbutton.innerText = "Select";
-                    const thisspeaker = this;
-                    this.selectbutton.onclick = function(){selectmethod(thisspeaker)};
-                    var selectbuttonelem = document.createElement("td");
-                    selectbuttonelem.appendChild(this.selectbutton)
-                    this.tablerow.appendChild(selectbuttonelem);
-                }
+    </div>
+    <script>
+        'use strict'
+        var currentchosenclass = null;
+        var intext = document.getElementById("inputminutes");
+        var minutesdiv = document.getElementById("minutestoclassify");
+        var classtable = document.getElementById("classtable");
+        const classarray = [];
+        class SpeakerClass {
+            constructor(selectmethod) {
+                this.tablerow = document.createElement("tr");
 
-                appearSelected(){
-                    this.selectbutton.innerText = "Selected";
-                }
+                this.namebox = document.createElement("input");
+                this.namebox.placeholder = "Name of category";
+                var nameboxelem = document.createElement("td");
+                nameboxelem.appendChild(this.namebox);
+                this.tablerow.appendChild(nameboxelem);
 
-                appearUnselected(){
-                    this.selectbutton.innerText = "Select";
-                }
+                this.colorpicker = document.createElement("input");
+                this.colorpicker.type = "color";
+                this.colorpicker.value = "#69acab"
+                var colorpickerelem = document.createElement("td");
+                colorpickerelem.append(this.colorpicker);
+                this.tablerow.appendChild(colorpickerelem);
 
-                getName(){
-                    return this.namebox.value;
-                }
-
-                getColor(){
-                    return this.colorpicker.value;
-                }
+                this.selectbutton = document.createElement("button");
+                this.selectbutton.innerText = "Select";
+                const thisspeaker = this;
+                this.selectbutton.onclick = function () { selectmethod(thisspeaker) };
+                var selectbuttonelem = document.createElement("td");
+                selectbuttonelem.appendChild(this.selectbutton)
+                this.tablerow.appendChild(selectbuttonelem);
             }
 
-            function selectSpeakerClass(chosenclass) {
-                classarray.forEach(c => {c.appearUnselected()})
-                chosenclass.appearSelected();
-                currentchosenclass = this;
+            appearSelected() {
+                this.selectbutton.innerText = "Selected";
             }
 
-            class MinutesLine {
-                constructor(text){
-                    this.text = text;
-                    this.para = document.createElement("p");
-                    this.para.appendChild(document.createTextNode(text));
-                    
-                    const thisminutesline = this;
-                    textpara.onclick = function(){handleParaClick(thisminutesline)};
-                    this.selectedclass = null;
-                }
-
-                decorateByClass(selectedclass){
-                    this.selectedclass = selectedclass;
-                    this.textpara.style.backgroundColor = selectedclass.getColor();
-                    this.textpara.label.innerText = selectedclass.getName();
-                }
+            appearUnselected() {
+                this.selectbutton.innerText = "Select";
             }
 
-            function prepareminutes(){
-                const inlines = intext.value.split("\n");
-                inlines.forEach(para => {
-                    var p = document.createElement("p");
-                    const paranode = document.createTextNode(para);
-                    p.appendChild(paranode);
-                    p.onclick = function(){setcolor(p);};
-                    minutesdiv.appendChild(p);
-                })
+            getName() {
+                return this.namebox.value;
             }
 
-            function handleParaClick(MinutesLine){
-                const elem = MinutesLine.textpara;
-                elem.style.backgroundColor = highlightcolor;
-                elem.className = "selected";
+            getColor() {
+                return this.colorpicker.value;
             }
-            
-            function addClass(){
-                var newclass = new SpeakerClass(selectSpeakerClass);
-                classarray.push(newclass);
-                classtable.appendChild(newclass.tablerow);
+        }
+
+        function selectSpeakerClass(chosenclass) {
+            classarray.forEach(c => { c.appearUnselected() })
+            chosenclass.appearSelected();
+            currentchosenclass = this;
+        }
+
+        class MinutesLine {
+            constructor(text) {
+                this.text = text;
+                this.para = document.createElement("p");
+                this.para.appendChild(document.createTextNode(text));
+
+                const thisminutesline = this;
+                textpara.onclick = function () { handleParaClick(thisminutesline) };
+                this.selectedclass = null;
             }
-        </script>
-    </body>
+
+            decorateByClass(selectedclass) {
+                this.selectedclass = selectedclass;
+                this.textpara.style.backgroundColor = selectedclass.getColor();
+                this.textpara.label.innerText = selectedclass.getName();
+            }
+        }
+
+        function prepareminutes() {
+            const inlines = intext.value.split("\n");
+            minutesdiv.innerHTML = "";
+            inlines.forEach(para => {
+                var p = document.createElement("p");
+                const paranode = document.createTextNode(para);
+                p.appendChild(paranode);
+                p.onclick = function () { setcolor(p); };
+                minutesdiv.appendChild(p);
+            })
+        }
+
+        function handleParaClick(MinutesLine) {
+            const elem = MinutesLine.textpara;
+            elem.style.backgroundColor = highlightcolor;
+            elem.className = "selected";
+        }
+
+        function addClass() {
+            var newclass = new SpeakerClass(selectSpeakerClass);
+            classarray.push(newclass);
+            classtable.appendChild(newclass.tablerow);
+        }
+    </script>
+</body>
+
 </html>
