@@ -76,7 +76,8 @@
     <div class="section">
         <p class="explanation">To use this, first paste the minutes in the text box then click "Process".</p>
         <textarea id="inputminutes" rows="10" placeholder="Minutes go here"></textarea>
-        <button onclick="prepareminutes();">Process</button>
+        <button onclick="prepareMinutesFromTextArea();">Process</button>
+        <p class="explanation">Alternatively, read minutes from a plain text file: <input class="full" id="inputfile" type="file" onchange="readMinutesFromFile()"/></p>
     </div>
     <div class="section">
         <p class="explanation">Categories can be configured below.</p>
@@ -91,6 +92,7 @@
         'use strict'
         var currentchosenclass = null;
         var intext = document.getElementById("inputminutes");
+        var infile = document.getElementById("inputfile");
         var minutesdiv = document.getElementById("minutestoclassify");
         var classtable = document.getElementById("classtable");
         const classarray = [];
@@ -224,8 +226,12 @@
             }
         }
 
-        function prepareminutes() {
-            const inlines = intext.value.split("\n");
+        function prepareMinutesFromTextArea(){
+            prepareMinutes(intext.value)
+        }
+
+        function prepareMinutes(text) {
+            const inlines = text.split("\n");
             minutesdiv.innerHTML = "";
             inlines.forEach(para => {
                 minutesdiv.appendChild(new MinutesLine(para).para);
