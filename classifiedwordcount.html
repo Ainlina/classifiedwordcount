@@ -95,7 +95,7 @@
         var classtable = document.getElementById("classtable");
         const classarray = [];
         class SpeakerClass {
-            constructor(selectmethod) {
+            constructor() {
                 this.tablerow = document.createElement("tr");
 
                 this.namebox = document.createElement("input");
@@ -114,10 +114,16 @@
                 this.selectbutton = document.createElement("button");
                 this.selectbutton.innerText = "Select";
                 const thisspeaker = this;
-                this.selectbutton.onclick = function () { selectmethod(thisspeaker) };
+                this.selectbutton.onclick = function () { thisspeaker.selectClass() };
                 var selectbuttonelem = document.createElement("td");
                 selectbuttonelem.appendChild(this.selectbutton)
                 this.tablerow.appendChild(selectbuttonelem);
+            }
+
+            selectClass() {
+                classarray.forEach(c => { c.appearUnselected() })
+                this.appearSelected();
+                currentchosenclass = this;
             }
 
             appearSelected() {
@@ -137,12 +143,6 @@
             }
         }
 
-        function selectSpeakerClass(chosenclass) {
-            classarray.forEach(c => { c.appearUnselected() })
-            chosenclass.appearSelected();
-            currentchosenclass = this;
-        }
-
         class MinutesLine {
             constructor(text) {
                 this.text = text;
@@ -150,37 +150,36 @@
                 this.para.appendChild(document.createTextNode(text));
 
                 const thisminutesline = this;
-                textpara.onclick = function () { handleParaClick(thisminutesline) };
+                this.para.onclick = function () { thisminutesline.decorateByCurrentClass() };
                 this.selectedclass = null;
             }
 
             decorateByClass(selectedclass) {
                 this.selectedclass = selectedclass;
-                this.textpara.style.backgroundColor = selectedclass.getColor();
-                this.textpara.label.innerText = selectedclass.getName();
+                this.para.style.backgroundColor = selectedclass.getColor();
+                //this.para.label.innerText = selectedclass.getName();
             }
+
+            decorateByCurrentClass() {
+                this.decorateByClass(currentchosenclass)
+            }
+
         }
 
         function prepareminutes() {
             const inlines = intext.value.split("\n");
             minutesdiv.innerHTML = "";
             inlines.forEach(para => {
-                var p = document.createElement("p");
-                const paranode = document.createTextNode(para);
-                p.appendChild(paranode);
-                p.onclick = function () { setcolor(p); };
-                minutesdiv.appendChild(p);
+                minutesdiv.appendChild(new MinutesLine(para).para);
             })
         }
 
-        function handleParaClick(MinutesLine) {
-            const elem = MinutesLine.textpara;
-            elem.style.backgroundColor = highlightcolor;
-            elem.className = "selected";
+        function handleParaClick(clickedLine) {
+            clickedLine.decorateByClass(currentchosenclass)
         }
 
         function addClass() {
-            var newclass = new SpeakerClass(selectSpeakerClass);
+            var newclass = new SpeakerClass();
             classarray.push(newclass);
             classtable.appendChild(newclass.tablerow);
         }
