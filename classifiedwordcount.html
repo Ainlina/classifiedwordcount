@@ -78,7 +78,7 @@
     <div class="section">
         <p class="explanation">To use this, first paste the minutes in the text box then click "Process".</p>
         <textarea id="inputminutes" rows="10" placeholder="Minutes go here"></textarea>
-        <button onclick="prepareMinutesFromTextArea();">Process</button>
+        <button onclick="prepareMinutesFromTextArea(); this.disabled = true">Process</button>
         <p class="explanation">Alternatively, read minutes from a plain text file: <input class="full" id="inputfile" type="file" onchange="readMinutesFromFile()"/></p>
     </div>
     <div class="section">
