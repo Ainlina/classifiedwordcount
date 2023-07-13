@@ -172,14 +172,14 @@
             addLine(line){
                 this.lines.add(line);
                 this.count += line.wordcount;
-                this.countbox.innerText = this.count;
+                this.countbox.innerText = `Word count: ${this.count}`;
             }
 
             removeLine(line){
                 var removalsuccess = this.lines.delete(line);
                 if (!removalsuccess){alert("Tried to remove set from nonexistent category. This shouldn't happen, please tell Kate.")}
                 this.count -= line.wordcount;
-                this.countbox.innerText = this.count;
+                this.countbox.innerText = `Word count: ${this.count}`;
             }
         }
 
@@ -240,7 +240,16 @@
             })
         }
 
+        function removeDuplicateSpaces(text){
+            // recursively remove duplicate spaces
+            while (text.includes("  ")){
+                text = text.replace("  ", " ")
+            }
+            return text
+        }
+
         function countWords(text){
+            text = removeDuplicateSpaces(text)
             return text == "" ? 0 : text.split(" ").length
         }
 
