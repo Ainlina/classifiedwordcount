@@ -241,10 +241,7 @@
         }
 
         function countWords(text){
-            if (text == ""){return 0;}
-            const matches = text.match(/ /g);
-            if (matches == null){return 1;}
-            else {return matches.length + 1;}
+            return text == "" ? 0 : text.split(" ").length
         }
 
         function addClass() {
