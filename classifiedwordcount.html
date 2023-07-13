@@ -114,24 +114,42 @@
                 this.selectbutton = document.createElement("button");
                 this.selectbutton.innerText = "Select";
                 const thisspeaker = this;
-                this.selectbutton.onclick = function () { thisspeaker.selectClass() };
+                this.selectbutton.onclick = function () { thisspeaker.handleSelectClick() };
                 var selectbuttonelem = document.createElement("td");
                 selectbuttonelem.appendChild(this.selectbutton)
                 this.tablerow.appendChild(selectbuttonelem);
+                
+                this.lines = new Set();
+                this.count = 0;
+                this.countbox = document.createElement("div");
+                this.countbox.innerText = this.count;
+                var countboxelem = document.createElement("td");
+                countboxelem.appendChild(this.countbox);
+                this.tablerow.appendChild(countboxelem);
+
+                this.selected = false
+            }
+
+            handleSelectClick(){
+                if (this.selected){
+                    this.unselectClass()
+                }
+                else{
+                    if (currentchosenclass != null){currentchosenclass.unselectClass()}
+                    this.selectClass()
+                }
             }
 
             selectClass() {
-                classarray.forEach(c => { c.appearUnselected() })
-                this.appearSelected();
+                this.selectbutton.innerText = "Selected";
+                this.selected = true
                 currentchosenclass = this;
             }
 
-            appearSelected() {
-                this.selectbutton.innerText = "Selected";
-            }
-
-            appearUnselected() {
+            unselectClass(){
                 this.selectbutton.innerText = "Select";
+                this.selected = false
+                currentchosenclass = null
             }
 
             getName() {
@@ -140,6 +158,24 @@
 
             getColor() {
                 return this.colorpicker.value;
+            }
+
+            updateColor(){
+                const newcolor = this.getColor();
+                this.lines.forEach(line => {line.setColor(newcolor);});
+            }
+
+            addLine(line){
+                this.lines.add(line);
+                this.count += line.wordcount;
+                this.countbox.innerText = this.count;
+            }
+
+            removeLine(line){
+                var removalsuccess = this.lines.delete(line);
+                if (!removalsuccess){alert("Tried to remove set from nonexistent category. This shouldn't happen, please tell Kate.")}
+                this.count -= line.wordcount;
+                this.countbox.innerText = this.count;
             }
         }
 
@@ -150,20 +186,42 @@
                 this.para.appendChild(document.createTextNode(text));
 
                 const thisminutesline = this;
-                this.para.onclick = function () { thisminutesline.decorateByCurrentClass() };
+                this.para.onclick = function () { thisminutesline.setToCurrentClass() };
                 this.selectedclass = null;
+                this.wordcount = countWords(text);
             }
 
             decorateByClass(selectedclass) {
-                this.selectedclass = selectedclass;
-                this.para.style.backgroundColor = selectedclass.getColor();
+                if (selectedclass == null){
+                    this.setColor("#ffffff")
+                }
+                else {
+                    this.setColor(selectedclass.getColor());
+                }
                 //this.para.label.innerText = selectedclass.getName();
             }
 
-            decorateByCurrentClass() {
-                this.decorateByClass(currentchosenclass)
+            setToCurrentClass() {
+                const destinationClass = currentchosenclass == this.selectedclass ? null : currentchosenclass
+                this.decorateByClass(destinationClass)
+                this.setClass(destinationClass)
             }
 
+            setColor(colorstr){
+                var rgbacolor = colorToRGBA(colorstr);
+                if (rgbacolor.slice(0, 3).filter(x => x != 0).length == 0){rgbacolor[3] = 0;}
+                else if (rgbacolor[3] == 255){rgbacolor[3] = 128;}
+                this.para.style.backgroundColor = rgbaToHex(Array.from(rgbacolor));
+            }
+
+            setClass(newclass){
+                if (this.selectedclass != null){this.selectedclass.removeLine(this);}
+                if (newclass != null){
+                    newclass.addLine(this);
+                }
+                this.decorateByClass(newclass);
+                this.selectedclass = newclass;
+            }
         }
 
         function prepareminutes() {
@@ -174,8 +232,11 @@
             })
         }
 
-        function handleParaClick(clickedLine) {
-            clickedLine.decorateByClass(currentchosenclass)
+        function countWords(text){
+            if (text == ""){return 0;}
+            const matches = text.match(/ /g);
+            if (matches == null){return 1;}
+            else {return matches.length + 1;}
         }
 
         function addClass() {
@@ -183,6 +244,36 @@
             classarray.push(newclass);
             classtable.appendChild(newclass.tablerow);
         }
+
+        function handlefilecontents(uploader, readercallback){
+            const reader = new FileReader();
+            reader.readAsText(uploader.files[0]);
+            reader.onload = () => readercallback(reader.result);
+        }
+
+        function readMinutesFromFile(){
+            handlefilecontents(infile, prepareMinutes);
+        }
+
+        function colorToRGBA(color) {
+            var cvs, ctx;
+            cvs = document.createElement('canvas');
+            cvs.height = 1;
+            cvs.width = 1;
+            ctx = cvs.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 1, 1);
+            return ctx.getImageData(0, 0, 1, 1).data;
+        }
+
+        function byteToHex(num) {
+            // Turns a number (0-255) into a 2-character hex number (00-ff)
+            return ('0'+num.toString(16)).slice(-2);
+        }
+
+        function rgbaToHex(rgbaarray){
+            return"#" + rgbaarray.map(byteToHex).join("")
+            }
     </script>
 </body>
 
